@@ -1,5 +1,4 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches:
@@ -7,7 +6,6 @@ on:
   pull_request:
     branches:
       - main  # Trigger on pull request to the main branch
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,8 +19,8 @@ jobs:
     - name: Log in to DockerHub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}  # Store Docker Hub credentials in GitHub Secrets
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username stored in GitHub Secrets
+        password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password stored in GitHub Secrets
 
     - name: Build the Docker image
       run: |
@@ -31,6 +29,9 @@ jobs:
     - name: Run the Docker container
       run: |
         sudo docker run -d -p 8080:80 static-website  # Run the container on port 8080
+
+    - name: Push the Docker image to Docker Hub
+      run: docker push static-website  # Push the image to Docker Hub
 
   deploy:
     runs-on: ubuntu-latest
@@ -44,7 +45,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}  # Store the private SSH key in GitHub Secrets
         port: 22
         script: |
-          cd /path/to/your/project
+          cd /home/ubuntu/Cloud-Driven-Static-Website-Deployment
           sudo docker pull static-website
           sudo docker stop $(sudo docker ps -q --filter "name=static-website") || true
           sudo docker run -d -p 8080:80 static-website
